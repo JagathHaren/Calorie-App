@@ -1,0 +1,8 @@
+{
+  "name": "Copy of NutriLens AI",
+  "description": "An advanced nutrition and calorie tracking application powered by Gemini AI. Scan your food, analyze nutrients from photos, track water intake, and log your daily progress with ease.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
