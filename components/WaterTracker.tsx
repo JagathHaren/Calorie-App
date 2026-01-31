@@ -1,74 +1,145 @@
 
 import React from 'react';
+import { UserPreferences } from '../types';
 
 interface WaterTrackerProps {
   current: number;
+  prefs: UserPreferences;
   onUpdate: (amount: number) => void;
 }
 
-const WaterTracker: React.FC<WaterTrackerProps> = ({ current, onUpdate }) => {
-  const goal = 2500;
-  const percentage = Math.min((current / goal) * 100, 100);
+const WaterTracker: React.FC<WaterTrackerProps> = ({ current, prefs, onUpdate }) => {
+  const goal = prefs.waterGoal || 2500;
+  const isOz = prefs.liquidUnit === 'oz';
   
-  const presets = [
-    { amount: 150, label: 'Small Glass', icon: '🥛' },
-    { amount: 250, label: 'Regular Glass', icon: '🥛' },
-    { amount: 500, label: 'Bottle', icon: '💧' }
-  ];
+  const displayCurrent = isOz ? (current / 29.574).toFixed(1) : current;
+  const displayGoal = isOz ? (goal / 29.574).toFixed(0) : goal;
+  const unitLabel = isOz ? 'oz' : 'ml';
+  const percentage = Math.min((current / goal) * 100, 100);
+
+  const circumference = 2 * Math.PI * 132;
+  const strokeDashoffset = circumference - (circumference * percentage / 100);
+
+  const presets = isOz 
+    ? [{ amount: 150, label: '5 oz', icon: '🥛' }, { amount: 250, label: '8 oz', icon: '🥛' }, { amount: 500, label: '17 oz', icon: '🍷' }]
+    : [{ amount: 150, label: '150ml', icon: '🥛' }, { amount: 250, label: '250ml', icon: '🥛' }, { amount: 500, label: '500ml', icon: '🍷' }];
 
   return (
-    <div className="p-5 flex flex-col items-center justify-between min-h-[80vh]">
+    <div className="p-5 flex flex-col items-center min-h-[80vh] space-y-10 bg-white">
       <div className="text-center w-full mt-4">
-        <h1 className="text-2xl font-bold text-slate-900">Hydration</h1>
-        <p className="text-sm text-slate-500">Goal: {goal}ml per day</p>
+        <p className="text-red-600 font-black uppercase tracking-[0.5em] text-[10px] mb-1 italic">Hydration Matrix</p>
+        <h1 className="text-5xl font-black text-red-950 italic tracking-tighter uppercase leading-none">Bio-Liquid</h1>
+        <p className="text-xs text-red-900/30 font-black mt-4 tracking-[0.3em] uppercase italic">Target: {displayGoal}{unitLabel}</p>
       </div>
 
-      <div className="relative h-64 w-64 flex items-center justify-center my-10">
-        <div className="absolute inset-0 bg-blue-50 rounded-full border-4 border-white shadow-inner flex flex-col items-center justify-center overflow-hidden">
-          {/* Animated Water Level */}
-          <div 
-            className="absolute bottom-0 left-0 right-0 bg-blue-500/30 transition-all duration-1000 ease-out"
-            style={{ height: `${percentage}%` }}
-          >
-            <div className="absolute top-0 left-0 right-0 h-4 bg-blue-400/20 blur-sm"></div>
-          </div>
-          
-          <div className="z-10 text-center">
-            <span className="text-5xl font-black text-blue-600 leading-none">{current}</span>
-            <p className="text-blue-400 font-bold text-lg mt-1">ml</p>
-          </div>
+      <div className="relative h-80 w-80 flex items-center justify-center">
+        {/* Dynamic Multi-Stage Red Glow */}
+        <div 
+          className="absolute inset-0 rounded-full transition-all duration-1000 blur-[60px] opacity-40 bg-red-600"
+          style={{ 
+            opacity: 0.1 + (percentage / 150),
+            transform: `scale(${0.8 + (percentage / 300)})`,
+            animation: percentage > 80 ? 'redPulse 1.5s ease-in-out infinite' : 'none'
+          }}
+        ></div>
+        
+        {/* Outer Background Track */}
+        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 288 288">
+          <circle 
+            cx="144" 
+            cy="144" 
+            r="132" 
+            stroke="#fee2e2" 
+            strokeWidth="20" 
+            fill="transparent" 
+          />
+        </svg>
+
+        {/* Primary Liquid Progress */}
+        <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 288 288">
+          <circle 
+            cx="144" 
+            cy="144" 
+            r="132" 
+            stroke="#DC2626" 
+            strokeWidth="20" 
+            fill="transparent" 
+            strokeDasharray={circumference} 
+            strokeDashoffset={strokeDashoffset}
+            strokeLinecap="round"
+            className="transition-all duration-1000 ease-in-out"
+          />
+          <circle 
+            cx="144" 
+            cy="144" 
+            r="132" 
+            stroke="white" 
+            strokeWidth="4" 
+            fill="transparent" 
+            strokeDasharray={circumference} 
+            strokeDashoffset={strokeDashoffset}
+            strokeLinecap="round"
+            className="transition-all duration-1000 ease-in-out opacity-20"
+          />
+        </svg>
+
+        {/* Deep Ruby Vessel */}
+        <div className="h-[230px] w-[230px] rounded-full bg-red-50 overflow-hidden relative border-[10px] border-white shadow-2xl flex items-center justify-center">
+            <div 
+              className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-red-600 to-red-400 transition-all duration-1000 ease-in-out shadow-[inset_0_20px_40px_rgba(0,0,0,0.1)]"
+              style={{ height: `${percentage}%`, opacity: 0.1 + (percentage / 200) }}
+            >
+              <div className="absolute inset-0 overflow-hidden">
+                 {[...Array(8)].map((_, i) => (
+                   <div 
+                    key={i} 
+                    className="absolute bg-white rounded-full opacity-40 animate-pulse"
+                    style={{
+                      left: `${15 + (i * 12)}%`,
+                      bottom: `${Math.random() * 80}%`,
+                      width: `${6 + Math.random() * 8}px`,
+                      height: `${6 + Math.random() * 8}px`,
+                      animationDuration: `${2 + Math.random() * 3}s`,
+                    }}
+                   ></div>
+                 ))}
+              </div>
+            </div>
+
+            <div className="flex flex-col items-center justify-center animate-in zoom-in duration-700 relative z-10">
+              <span className="text-8xl font-black text-red-950 italic tracking-tighter leading-none">{displayCurrent}</span>
+              <p className="text-red-600 font-black text-xl uppercase tracking-[0.3em] mt-2 italic">{unitLabel}</p>
+            </div>
         </div>
       </div>
 
-      <div className="w-full space-y-6 pb-8">
-        <div className="flex justify-between gap-3">
-          {presets.map((preset, i) => (
-            <button
-              key={i}
-              onClick={() => onUpdate(preset.amount)}
-              className="flex-1 bg-white border border-slate-100 p-4 rounded-3xl shadow-sm hover:border-blue-200 transition-colors active:scale-95 duration-75 flex flex-col items-center"
+      <div className="w-full space-y-6">
+        <div className="flex justify-between gap-4">
+          {presets.map((p, i) => (
+            <button 
+              key={i} 
+              onClick={() => onUpdate(p.amount)} 
+              className="flex-1 bg-white border-4 border-red-900 p-6 rounded-[2.5rem] flex flex-col items-center hover:bg-red-50 hover:border-red-600 transition-all active:scale-95 group shadow-[6px_6px_0px_0px_rgba(153,27,27,1)]"
             >
-              <span className="text-2xl mb-1">{preset.icon}</span>
-              <span className="text-xs font-bold text-slate-800">+{preset.amount}ml</span>
+              <span className="text-3xl mb-2 group-hover:scale-110 transition-transform">{p.icon}</span>
+              <span className="text-[10px] font-black text-red-950 uppercase tracking-widest group-hover:text-red-600">+{p.label}</span>
             </button>
           ))}
         </div>
-
-        <div className="flex gap-4">
-          <button 
-            onClick={() => onUpdate(-100)}
-            className="flex-1 py-4 bg-slate-100 rounded-2xl font-bold text-slate-500 active:scale-95"
-          >
-            Undo -100ml
-          </button>
-          <button 
-            onClick={() => onUpdate(200)}
-            className="flex-[2] py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg shadow-blue-600/20 active:scale-95"
-          >
-            Custom Add
-          </button>
-        </div>
+        <button 
+          onClick={() => onUpdate(-100)} 
+          className="w-full py-6 bg-red-950 text-white rounded-[2rem] font-black uppercase tracking-[0.4em] text-xs hover:bg-red-900 transition-all shadow-2xl active:scale-[0.98]"
+        >
+          Volume Correction
+        </button>
       </div>
+      
+      <style>{`
+        @keyframes redPulse {
+          0%, 100% { opacity: 0.2; transform: scale(0.9); }
+          50% { opacity: 0.6; transform: scale(1.1); }
+        }
+      `}</style>
     </div>
   );
 };

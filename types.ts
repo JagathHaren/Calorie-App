@@ -6,7 +6,7 @@ export interface NutritionData {
   carbs: number;
   fat: number;
   vitamins: string[];
-  estimatedWeight: string;
+  estimatedWeight: string; 
 }
 
 export interface FoodLog {
@@ -17,6 +17,24 @@ export interface FoodLog {
   type: 'photo' | 'manual' | 'barcode';
 }
 
+export interface DailySummary {
+  date: string; // YYYY-MM-DD
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+}
+
+export interface Recipe {
+  id: string;
+  title: string;
+  summary: string;
+  content: string;
+  tags: string[];
+  caloriesPerServing: number;
+  imageUrl?: string;
+}
+
 export interface DailyStats {
   calories: number;
   protein: number;
@@ -25,4 +43,11 @@ export interface DailyStats {
   water: number;
 }
 
-export type View = 'dashboard' | 'camera' | 'history' | 'water';
+export interface UserPreferences {
+  weightUnit: 'g' | 'oz';
+  liquidUnit: 'ml' | 'oz';
+  calorieGoal: number;
+  waterGoal: number;
+}
+
+export type View = 'dashboard' | 'camera' | 'history' | 'water' | 'search' | 'settings' | 'recipes';
